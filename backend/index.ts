@@ -1,7 +1,7 @@
 import { tavily } from '@tavily/core'
 import { createAiGateway } from "ai-gateway-provider";
 import { createUnified } from "ai-gateway-provider/providers/unified";
-import { generateObject } from "ai";
+import { streamText } from "ai";
 import express from "express";
 import { PROMPT_TEMPLATE } from './prompt';
 import { z } from "zod";
@@ -45,13 +45,23 @@ app.post("/ask", async (req, res) => {
         .replace("{{USER_QUERY}}", query)
 
     try {
-        const { object } = await generateObject({
+        const result =  await streamText({
             model: aigateway(unified("workers-ai/@cf/meta/llama-3.3-70b-instruct-fp8-fast")),
-            schema: SearchResponseSchema,
+            // schema: SearchResponseSchema,
             prompt: prompt,
         });
 
-        res.json(object);
+       res.setHeader("Content-Type","text/plane");
+       res.setHeader("Transfer-Encoding","chunked");
+      
+       for await(const textData of result.textStream){
+            res.write(textData);
+       }
+       res.write("------sources---------\n");
+
+       webSearchResult.forEach(result=>res.write(JSON.stringify(result)));
+       res.end();
+
     } catch (error) {
     }
 })
