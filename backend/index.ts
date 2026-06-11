@@ -1,9 +1,9 @@
 import { tavily } from '@tavily/core'
 import { createAiGateway } from "ai-gateway-provider";
 import { createUnified } from "ai-gateway-provider/providers/unified";
-import { streamText } from "ai";
+import { streamText,generateObject } from "ai";
 import express from "express";
-import { PROMPT_TEMPLATE } from './prompt';
+import { PROMPT_TEMPLATE ,SYSTEM_PROMPT } from './prompt';
 import { z } from "zod";
 
 const client = tavily({ apiKey: process.env.TAVILY_API_KEY });
@@ -45,25 +45,36 @@ app.post("/ask", async (req, res) => {
         .replace("{{USER_QUERY}}", query)
 
     try {
-        const result =  await streamText({
+        const result = streamText({
             model: aigateway(unified("workers-ai/@cf/meta/llama-3.3-70b-instruct-fp8-fast")),
-            // schema: SearchResponseSchema,
+            //schema: SearchResponseSchema,
+            system:SYSTEM_PROMPT,
             prompt: prompt,
         });
 
-       res.setHeader("Content-Type","text/plane");
+       res.setHeader("Content-Type","text/plain");
        res.setHeader("Transfer-Encoding","chunked");
       
        for await(const textData of result.textStream){
             res.write(textData);
        }
-       res.write("------sources---------\n");
-
-       webSearchResult.forEach(result=>res.write(JSON.stringify(result)));
+       res.write("\n<SOURCES>\n");
+       res.write(JSON.stringify(webSearchResult.map(result=>result.url)));
+       res.write("\n</SOURCES>\n");
        res.end();
-
-    } catch (error) {
+       
     }
+         catch (error) {
+    }
+})
+
+
+app.post("/ask/follow_ups",async (req,res)=>{
+    //get the existing chat from db
+    // -do context engineering 
+    //forward the full history to the llm
+    //stream the response to the user 
+    //
 })
 
 app.listen(3000);
