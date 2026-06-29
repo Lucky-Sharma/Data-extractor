@@ -22,9 +22,6 @@ app.post("/ask", async (req, res) => {
     const query = req.body.query;
 
 
-    //check the user have enough credit 
-    //check if we have web search indexed for similar query  
-    //web search to gether sources
 
     const webSearch = await client.search(query, {
         searchDepth: "advanced"
