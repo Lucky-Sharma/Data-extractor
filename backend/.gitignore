@@ -1,31 +1,18 @@
-# dependencies (bun install)
 node_modules
 bun.exe
-
-# output
 out
 dist
 *.tgz
-
-# code coverage
 coverage
 *.lcov
-
-# logs
 logs
-_.log
-report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
-
-
-# caches
+*.log
+report*.json
+.env
+.env.*
 .eslintcache
 .cache
 *.tsbuildinfo
-
-# IntelliJ based IDEs
 .idea
-
-# Finder (MacOS) folder config
 .DS_Store
-
 /generated/prisma
